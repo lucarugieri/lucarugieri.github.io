@@ -14,6 +14,23 @@ pulciniContainer.after(adultiContainer);
 let covate = JSON.parse(localStorage.getItem("covate")) || [];
 let pulcini = JSON.parse(localStorage.getItem("pulcini")) || [];
 
+
+function aggiungiCovata() {
+  const nome = prompt("Nome Covata (es. L02):");
+  const data = prompt("Data Inizio (YYYY-MM-DD):");
+  const uova = prompt("Numero totale uova:");
+  const razze = prompt("Razze:");
+  if (nome && data && uova && razze) {
+    covate.push({
+      nome: nome,
+      dataInizio: data,
+      uovaTotali: parseInt(uova),
+      razze: razze
+    });
+    localStorage.setItem("covate", JSON.stringify(covate));
+    render();
+  }
+}
 function render() {
   renderDashboard();
   renderCovate();
