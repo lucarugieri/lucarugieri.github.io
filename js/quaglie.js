@@ -35,20 +35,32 @@ function renderRegistroPulcini() {
   });
 
   Object.keys(gruppi).forEach(covata => {
-    const section = document.createElement("div");
-    section.className = "covata";
-    const h3 = document.createElement("h3");
-    h3.textContent = `Covata ${covata}`;
-    section.appendChild(h3);
+    const wrapper = document.createElement("div");
+    wrapper.className = "covata";
+
+    const header = document.createElement("h3");
+    header.textContent = `▶ Covata ${covata}`;
+    header.style.cursor = "pointer";
+    header.onclick = () => {
+      const visible = content.style.display === "block";
+      content.style.display = visible ? "none" : "block";
+      header.textContent = `${visible ? '▶' : '▼'} Covata ${covata}`;
+    };
+
+    const content = document.createElement("div");
+    content.style.display = "none";
+    content.style.marginLeft = "1rem";
 
     gruppi[covata].forEach(p => {
       const eta = calcolaEta(p.dataNascita);
       const el = document.createElement("p");
       el.textContent = `• ${p.nome} (${p.sesso} - ${eta} giorni)`;
-      section.appendChild(el);
+      content.appendChild(el);
     });
 
-    registroPulciniDiv.appendChild(section);
+    wrapper.appendChild(header);
+    wrapper.appendChild(content);
+    registroPulciniDiv.appendChild(wrapper);
   });
 }
 
