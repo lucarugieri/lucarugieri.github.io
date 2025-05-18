@@ -10,9 +10,55 @@ let schiuse = JSON.parse(localStorage.getItem("schiuse")) || {};
 
 function render() {
   renderDashboard();
+  renderCharts();
   renderTimeline();
   renderCovate();
   renderPulcini();
+}
+
+function renderCharts() {
+  const pulciniPerCovata = {};
+  const sessoConteggio = { Maschio: 0, Femmina: 0, Incerto: 0 };
+
+  pulcini.forEach(p => {
+    pulciniPerCovata[p.covata] = (pulciniPerCovata[p.covata] || 0) + 1;
+    if (p.sesso === "Maschio") sessoConteggio.Maschio++;
+    else if (p.sesso === "Femmina") sessoConteggio.Femmina++;
+    else sessoConteggio.Incerto++;
+  });
+
+  const ctxCovate = document.getElementById("chartCovate").getContext("2d");
+  new Chart(ctxCovate, {
+    type: "bar",
+    data: {
+      labels: Object.keys(pulciniPerCovata),
+      datasets: [{
+        label: "Pulcini per Covata",
+        data: Object.values(pulciniPerCovata),
+        backgroundColor: "#6d4c41"
+      }]
+    },
+    options: {
+      responsive: true,
+      plugins: { legend: { display: false } }
+    }
+  });
+
+  const ctxSesso = document.getElementById("chartSesso").getContext("2d");
+  new Chart(ctxSesso, {
+    type: "pie",
+    data: {
+      labels: Object.keys(sessoConteggio),
+      datasets: [{
+        label: "Distribuzione Sesso",
+        data: Object.values(sessoConteggio),
+        backgroundColor: ["#4caf50", "#f06292", "#ffca28"]
+      }]
+    },
+    options: {
+      responsive: true
+    }
+  });
 }
 
 function renderTimeline() {
@@ -41,7 +87,6 @@ function renderTimeline() {
     grower.setDate(grower.getDate() + 21);
     const layer = new Date(grower);
     layer.setDate(layer.getDate() + 21);
-
     const format = d => d.toISOString().split("T")[0];
 
     const box = document.createElement("div");
