@@ -1,17 +1,79 @@
 
 const dashboardContainer = document.getElementById("dashboard");
+const covateContainer = document.getElementById("covate");
 const pulciniContainer = document.getElementById("pulcini");
 const registroPulciniDiv = document.createElement("div");
 registroPulciniDiv.id = "registroPulcini";
 registroPulciniDiv.style.display = "none";
 pulciniContainer.after(registroPulciniDiv);
 
-const covate = JSON.parse(localStorage.getItem("covate")) || [];
-const pulcini = JSON.parse(localStorage.getItem("pulcini")) || [];
+let covate = JSON.parse(localStorage.getItem("covate")) || [];
+let pulcini = JSON.parse(localStorage.getItem("pulcini")) || [];
 
 function render() {
   renderDashboard();
+  renderCovate();
   renderPulsanteRegistro();
+}
+
+function renderCovate() {
+  covateContainer.innerHTML = "";
+  covate.forEach((covata, index) => {
+    const div = document.createElement("div");
+    div.className = "covata";
+    div.innerHTML = `
+      <h3>Covata ${covata.nome}</h3>
+      <p><strong>Data Inizio:</strong> ${covata.dataInizio}</p>
+      <p><strong>Uova Totali:</strong> ${covata.uovaTotali}</p>
+      <p><strong>Razze:</strong> ${covata.razze}</p>
+      <button onclick="rimuoviCovata(${index})">Rimuovi</button>
+      <hr/>
+    `;
+    covateContainer.appendChild(div);
+  });
+  localStorage.setItem("covate", JSON.stringify(covate));
+}
+
+function aggiungiCovata() {
+  const nome = prompt("Nome Covata (es. L02):");
+  const data = prompt("Data Inizio (YYYY-MM-DD):");
+  const uova = prompt("Numero totale uova:");
+  const razze = prompt("Razze:");
+  if (nome && data && uova && razze) {
+    covate.push({
+      nome: nome,
+      dataInizio: data,
+      uovaTotali: parseInt(uova),
+      razze: razze
+    });
+    localStorage.setItem("covate", JSON.stringify(covate));
+    render();
+  }
+}
+
+function aggiungiPulcino() {
+  const nome = prompt("Nome del pulcino:");
+  const sesso = prompt("Sesso (Maschio, Femmina, Incerto):");
+  const dataNascita = prompt("Data di nascita (YYYY-MM-DD):");
+  const covata = prompt("Covata di origine (es. L01):");
+  if (nome && sesso && dataNascita && covata) {
+    pulcini.push({
+      nome,
+      sesso,
+      dataNascita,
+      covata
+    });
+    localStorage.setItem("pulcini", JSON.stringify(pulcini));
+    render();
+  }
+}
+
+function rimuoviCovata(index) {
+  if (confirm("Sei sicuro di voler rimuovere questa covata?")) {
+    covate.splice(index, 1);
+    localStorage.setItem("covate", JSON.stringify(covate));
+    render();
+  }
 }
 
 function renderPulsanteRegistro() {
