@@ -1,6 +1,7 @@
 
 const covateContainer = document.getElementById("covate");
 const pulciniContainer = document.getElementById("pulcini");
+const dashboardContainer = document.getElementById("dashboard");
 
 let covate = JSON.parse(localStorage.getItem("covate")) || [
   {
@@ -14,8 +15,55 @@ let covate = JSON.parse(localStorage.getItem("covate")) || [
 let pulcini = JSON.parse(localStorage.getItem("pulcini")) || [];
 
 function render() {
+  renderDashboard();
   renderCovate();
   renderPulcini();
+}
+
+function renderDashboard() {
+  dashboardContainer.innerHTML = "";
+  if (covate.length === 0) {
+    dashboardContainer.innerHTML = "<p>Nessuna covata registrata.</p>";
+    return;
+  }
+
+  const summary = document.createElement("div");
+  summary.className = "dashboard";
+
+  let totaleUova = 0;
+  let totalePulcini = 0;
+
+  covate.forEach(covata => {
+    const pulciniCovata = pulcini.filter(p => p.covata === covata.nome);
+    const nati = pulciniCovata.length;
+    const hatchRate = covata.uovaTotali > 0 ? Math.round((nati / covata.uovaTotali) * 100) : 0;
+
+    totaleUova += covata.uovaTotali;
+    totalePulcini += nati;
+
+    const box = document.createElement("div");
+    box.className = "covata";
+    box.innerHTML = `
+      <h3>${covata.nome}</h3>
+      <p><strong>Uova Totali:</strong> ${covata.uovaTotali}</p>
+      <p><strong>Pulcini Nati:</strong> ${nati}</p>
+      <p><strong>Hatch Rate:</strong> ${hatchRate}%</p>
+    `;
+    summary.appendChild(box);
+  });
+
+  const totaleBox = document.createElement("div");
+  totaleBox.className = "covata";
+  const totaleRate = totaleUova > 0 ? Math.round((totalePulcini / totaleUova) * 100) : 0;
+  totaleBox.innerHTML = `
+    <h3>Totale</h3>
+    <p><strong>Uova Totali:</strong> ${totaleUova}</p>
+    <p><strong>Pulcini Nati:</strong> ${totalePulcini}</p>
+    <p><strong>Hatch Rate Medio:</strong> ${totaleRate}%</p>
+  `;
+  summary.appendChild(totaleBox);
+
+  dashboardContainer.appendChild(summary);
 }
 
 function renderCovate() {
@@ -67,14 +115,14 @@ function aggiungiCovata() {
       uovaTotali: parseInt(uova),
       razze: razze
     });
-    renderCovate();
+    render();
   }
 }
 
 function rimuoviCovata(index) {
   if (confirm("Sei sicuro di voler rimuovere questa covata?")) {
     covate.splice(index, 1);
-    renderCovate();
+    render();
   }
 }
 
@@ -90,14 +138,14 @@ function aggiungiPulcino() {
       dataNascita,
       covata
     });
-    renderPulcini();
+    render();
   }
 }
 
 function rimuoviPulcino(index) {
   if (confirm("Sei sicuro di voler rimuovere questo pulcino?")) {
     pulcini.splice(index, 1);
-    renderPulcini();
+    render();
   }
 }
 
@@ -107,5 +155,8 @@ function calcolaEta(dataNascita) {
   const diff = oggi - nascita;
   return Math.floor(diff / (1000 * 60 * 60 * 24));
 }
+
+render();
+
 
 render();
