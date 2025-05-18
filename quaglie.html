@@ -8,6 +8,25 @@
   <link rel="stylesheet" href="/style.css" />
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <script defer src="js/quaglie.js"></script>
+  <style>
+    .dashboard-entry {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 1rem;
+      margin-bottom: 1rem;
+      background: #fffdf8;
+      border: 1px solid #ccc;
+      padding: 1rem;
+    }
+    .dashboard-entry canvas {
+      max-width: 180px;
+      max-height: 180px;
+    }
+    .dashboard-info {
+      flex: 1;
+    }
+  </style>
 </head>
 <body>
   <header>
@@ -24,10 +43,8 @@
   </header>
   <main>
     <section>
-      <h2>📊 Dashboard Covate</h2>
+      <h2>📊 Dashboard Covate con Grafici Laterali</h2>
       <div id="dashboard"></div>
-      <canvas id="chartCovate" width="400" height="200"></canvas>
-      <canvas id="chartSesso" width="400" height="200"></canvas>
     </section>
     <hr/>
     <section>
