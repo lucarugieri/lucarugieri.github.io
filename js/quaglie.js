@@ -2,22 +2,60 @@
 const covateContainer = document.getElementById("covate");
 const pulciniContainer = document.getElementById("pulcini");
 const dashboardContainer = document.getElementById("dashboard");
+const timelineContainer = document.getElementById("timeline");
 
-let covate = JSON.parse(localStorage.getItem("covate")) || [
-  {
-    nome: "L01",
-    dataInizio: "2025-04-26",
-    uovaTotali: 24,
-    razze: "Italian Coturnix, Sparkly Coturnix"
-  }
-];
-
+let covate = JSON.parse(localStorage.getItem("covate")) || [];
 let pulcini = JSON.parse(localStorage.getItem("pulcini")) || [];
+let schiuse = JSON.parse(localStorage.getItem("schiuse")) || {};
 
 function render() {
   renderDashboard();
+  renderTimeline();
   renderCovate();
   renderPulcini();
+}
+
+function renderTimeline() {
+  timelineContainer.innerHTML = "";
+  if (covate.length === 0) {
+    timelineContainer.innerHTML = "<p>Nessuna covata registrata.</p>";
+    return;
+  }
+
+  covate.forEach(covata => {
+    const nome = covata.nome;
+    let dataSchiusa = schiuse[nome];
+
+    if (!dataSchiusa) {
+      dataSchiusa = prompt(`Inserisci la data di schiusa per la covata ${nome} (YYYY-MM-DD):`);
+      if (dataSchiusa) {
+        schiuse[nome] = dataSchiusa;
+        localStorage.setItem("schiuse", JSON.stringify(schiuse));
+      } else {
+        return;
+      }
+    }
+
+    const start = new Date(dataSchiusa);
+    const grower = new Date(start);
+    grower.setDate(grower.getDate() + 21);
+    const layer = new Date(grower);
+    layer.setDate(layer.getDate() + 21);
+
+    const format = d => d.toISOString().split("T")[0];
+
+    const box = document.createElement("div");
+    box.className = "covata";
+    box.innerHTML = `
+      <h3>Covata ${nome}</h3>
+      <ul>
+        <li><strong>Starter:</strong> ${format(start)} → ${format(grower)}</li>
+        <li><strong>Grower:</strong> ${format(grower)} → ${format(layer)}</li>
+        <li><strong>Layer:</strong> ${format(layer)} → ∞</li>
+      </ul>
+    `;
+    timelineContainer.appendChild(box);
+  });
 }
 
 function renderDashboard() {
@@ -155,8 +193,5 @@ function calcolaEta(dataNascita) {
   const diff = oggi - nascita;
   return Math.floor(diff / (1000 * 60 * 60 * 24));
 }
-
-render();
-
 
 render();
