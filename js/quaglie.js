@@ -7,6 +7,10 @@ registroPulciniDiv.id = "registroPulcini";
 registroPulciniDiv.style.display = "none";
 pulciniContainer.after(registroPulciniDiv);
 
+const adultiContainer = document.createElement("div");
+adultiContainer.id = "adulti";
+pulciniContainer.after(adultiContainer);
+
 let covate = JSON.parse(localStorage.getItem("covate")) || [];
 let pulcini = JSON.parse(localStorage.getItem("pulcini")) || [];
 
@@ -14,6 +18,7 @@ function render() {
   renderDashboard();
   renderCovate();
   renderPulsanteRegistro();
+  renderAdulti();
 }
 
 function renderCovate() {
@@ -34,23 +39,6 @@ function renderCovate() {
   localStorage.setItem("covate", JSON.stringify(covate));
 }
 
-function aggiungiCovata() {
-  const nome = prompt("Nome Covata (es. L02):");
-  const data = prompt("Data Inizio (YYYY-MM-DD):");
-  const uova = prompt("Numero totale uova:");
-  const razze = prompt("Razze:");
-  if (nome && data && uova && razze) {
-    covate.push({
-      nome: nome,
-      dataInizio: data,
-      uovaTotali: parseInt(uova),
-      razze: razze
-    });
-    localStorage.setItem("covate", JSON.stringify(covate));
-    render();
-  }
-}
-
 function aggiungiPulcino() {
   const nome = prompt("Nome del pulcino:");
   const sesso = prompt("Sesso (Maschio, Femmina, Incerto):");
@@ -61,7 +49,9 @@ function aggiungiPulcino() {
       nome,
       sesso,
       dataNascita,
-      covata
+      covata,
+      fase: "pulcino",
+      gabbia: ""
     });
     localStorage.setItem("pulcini", JSON.stringify(pulcini));
     render();
@@ -92,9 +82,19 @@ function modificaPulcino(index) {
   const dataNascita = prompt("Modifica data nascita (YYYY-MM-DD):", p.dataNascita) || p.dataNascita;
   const covata = prompt("Modifica covata:", p.covata) || p.covata;
 
-  pulcini[index] = { nome, sesso, dataNascita, covata };
+  pulcini[index] = { ...p, nome, sesso, dataNascita, covata };
   localStorage.setItem("pulcini", JSON.stringify(pulcini));
   render();
+}
+
+function evolviPulcino(index) {
+  const gabbia = prompt("In quale gabbia spostare questo pulcino? (es. A, B, C)");
+  if (gabbia) {
+    pulcini[index].fase = "adulto";
+    pulcini[index].gabbia = gabbia.toUpperCase();
+    localStorage.setItem("pulcini", JSON.stringify(pulcini));
+    render();
+  }
 }
 
 function renderPulsanteRegistro() {
@@ -112,7 +112,7 @@ function renderRegistroPulcini() {
   registroPulciniDiv.innerHTML = "";
   const gruppi = {};
 
-  pulcini.forEach(p => {
+  pulcini.filter(p => p.fase !== "adulto").forEach(p => {
     if (!gruppi[p.covata]) gruppi[p.covata] = [];
     gruppi[p.covata].push(p);
   });
@@ -159,12 +159,18 @@ function renderRegistroPulcini() {
       btnModifica.textContent = "✏️ Modifica";
       btnModifica.onclick = () => modificaPulcino(pulcini.indexOf(p));
 
+      const btnEvolvi = document.createElement("button");
+      btnEvolvi.textContent = "⬆️ Sposta in adulti";
+      btnEvolvi.style.marginLeft = "0.5rem";
+      btnEvolvi.onclick = () => evolviPulcino(pulcini.indexOf(p));
+
       const btnRimuovi = document.createElement("button");
       btnRimuovi.textContent = "❌ Rimuovi";
       btnRimuovi.style.marginLeft = "0.5rem";
       btnRimuovi.onclick = () => rimuoviPulcino(pulcini.indexOf(p));
 
       scheda.appendChild(btnModifica);
+      scheda.appendChild(btnEvolvi);
       scheda.appendChild(btnRimuovi);
 
       btnDettagli.onclick = () => {
@@ -183,6 +189,33 @@ function renderRegistroPulcini() {
   });
 }
 
+function renderAdulti() {
+  adultiContainer.innerHTML = "<h2>🪶 Quaglie Adulte per Gabbia</h2>";
+  const gruppi = {};
+
+  pulcini.filter(p => p.fase === "adulto").forEach(p => {
+    if (!gruppi[p.gabbia]) gruppi[p.gabbia] = [];
+    gruppi[p.gabbia].push(p);
+  });
+
+  Object.keys(gruppi).forEach(gabbia => {
+    const section = document.createElement("div");
+    section.className = "covata";
+    const h3 = document.createElement("h3");
+    h3.textContent = `Gabbia ${gabbia}`;
+    section.appendChild(h3);
+
+    gruppi[gabbia].forEach(p => {
+      const eta = calcolaEta(p.dataNascita);
+      const el = document.createElement("p");
+      el.textContent = `• ${p.nome} (${p.sesso} - ${eta} giorni) – da Covata ${p.covata}`;
+      section.appendChild(el);
+    });
+
+    adultiContainer.appendChild(section);
+  });
+}
+
 function renderDashboard() {
   dashboardContainer.innerHTML = "";
   covate.forEach((covata, index) => {
@@ -191,7 +224,7 @@ function renderDashboard() {
 
     const info = document.createElement("div");
     info.className = "dashboard-info";
-    const pulciniCovata = pulcini.filter(p => p.covata === covata.nome);
+    const pulciniCovata = pulcini.filter(p => p.covata === covata.nome && p.fase !== "adulto");
     const nati = pulciniCovata.length;
     const hatchRate = covata.uovaTotali > 0 ? Math.round((nati / covata.uovaTotali) * 100) : 0;
 
