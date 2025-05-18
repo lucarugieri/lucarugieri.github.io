@@ -85,6 +85,18 @@ function rimuoviPulcino(index) {
   }
 }
 
+function modificaPulcino(index) {
+  const p = pulcini[index];
+  const nome = prompt("Modifica nome:", p.nome) || p.nome;
+  const sesso = prompt("Modifica sesso (Maschio, Femmina, Incerto):", p.sesso) || p.sesso;
+  const dataNascita = prompt("Modifica data nascita (YYYY-MM-DD):", p.dataNascita) || p.dataNascita;
+  const covata = prompt("Modifica covata:", p.covata) || p.covata;
+
+  pulcini[index] = { nome, sesso, dataNascita, covata };
+  localStorage.setItem("pulcini", JSON.stringify(pulcini));
+  render();
+}
+
 function renderPulsanteRegistro() {
   pulciniContainer.innerHTML = "";
   const btn = document.createElement("button");
@@ -129,9 +141,6 @@ function renderRegistroPulcini() {
       div.style.marginBottom = "0.5rem";
       const btnDettagli = document.createElement("button");
       btnDettagli.textContent = "📋 Dettagli";
-      const btnRimuovi = document.createElement("button");
-      btnRimuovi.textContent = "❌ Rimuovi";
-      btnRimuovi.style.marginLeft = "0.5rem";
 
       const scheda = document.createElement("div");
       scheda.style.display = "none";
@@ -146,15 +155,24 @@ function renderRegistroPulcini() {
         <p><strong>Covata di origine:</strong> ${p.covata}</p>
       `;
 
+      const btnModifica = document.createElement("button");
+      btnModifica.textContent = "✏️ Modifica";
+      btnModifica.onclick = () => modificaPulcino(pulcini.indexOf(p));
+
+      const btnRimuovi = document.createElement("button");
+      btnRimuovi.textContent = "❌ Rimuovi";
+      btnRimuovi.style.marginLeft = "0.5rem";
+      btnRimuovi.onclick = () => rimuoviPulcino(pulcini.indexOf(p));
+
+      scheda.appendChild(btnModifica);
+      scheda.appendChild(btnRimuovi);
+
       btnDettagli.onclick = () => {
         scheda.style.display = scheda.style.display === "none" ? "block" : "none";
       };
 
-      btnRimuovi.onclick = () => rimuoviPulcino(pulcini.indexOf(p));
-
       div.innerHTML = `• ${p.nome} (${p.sesso} - ${eta} giorni) `;
       div.appendChild(btnDettagli);
-      div.appendChild(btnRimuovi);
       content.appendChild(div);
       content.appendChild(scheda);
     });
